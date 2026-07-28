@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Session Receipt | Elite Gaming</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Special styles for the printable ticket area */
+        .receipt-paper {
+            background: white;
+            color: black;
+            width: 350px;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px dashed #ccc;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .total-row {
+            border-top: 2px solid #000;
+            margin-top: 20px;
+            padding-top: 10px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* Hide buttons when printing */
+        @media print {
+            .no-print {
+                display: none;
+            }
+            body {
+                background: white !important;
+            }
+            .receipt-paper {
+                box-shadow: none;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container text-center no-print mt-5">
+        <h2 class="text-info">Session Completed!</h2>
+        <p>Please collect the payment and print the ticket for the customer.</p>
+    </div>
+
+    <!-- The Ticket Logic -->
+    <div class="receipt-paper" id="ticket">
+        <div class="receipt-header">
+            <h4>ELITE GAMING LOUNGE</h4>
+            <small>Official Game Receipt</small><br>
+            <small>{{ session.end_time.strftime('%Y-%m-%d %H:%M') }}</small>
+        </div>
+
+        <div class="receipt-row">
+            <span>Station:</span>
+            <span>Station {{ session.station_id }}</span>
+        </div>
+
+        <div class="receipt-row">
+            <span>Game:</span>
+            <span>{{ session.game_name }}</span>
+        </div>
+
+        <div class="receipt-row">
+            <span>Duration:</span>
+            <!-- Logic to show hours/minutes -->
+            <span>{{ ((session.end_time - session.start_time).total_seconds() / 60) | int }} Mins</span>
+        </div>
+
+        <div class="receipt-row">
+            <span>Payment:</span>
+            <span>{{ session.payment_method }}</span>
+        </div>
+
+        <div class="receipt-row total-row">
+            <span>TOTAL AMOUNT:</span>
+            <span>KSH {{ session.total_cost }}</span>
+        </div>
+
+        <div class="receipt-header mt-4" style="border-bottom: none; border-top: 2px dashed #ccc;">
+            <p>Thank you for playing!</p>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="text-center no-print">
+        <button onclick="window.print()" class="btn btn-success px-4 me-2">Print Ticket</button>
+        <a href="/user_dashboard" class="btn btn-outline-light">Return to Dashboard</a>
+    </div>
+
+</body>
+</html>

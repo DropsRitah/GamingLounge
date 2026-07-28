@@ -1,0 +1,24 @@
+body, html {
+    height: 100%; margin: 0;
+    background: #050505 url('/static/images/bg.jpg') no-repeat center center fixed;
+    background-size: cover; color: white; font-family: 'Segoe UI', sans-serif;
+}
+.full-screen { min-height: 100vh; backdrop-filter: blur(10px); padding: 20px; }
+.glass {
+    background: rgba(15, 15, 25, 0.85); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 15px; padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.station-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px;
+}
+.st-card {
+    padding: 10px; border-radius: 8px; text-align: center; font-size: 0.75rem;
+    border-top: 4px solid #555; background: rgba(255,255,255,0.05);
+}
+.Available { border-color: #00ff88; }
+.Busy { border-color: #ff0055; }
+.Out.of.Service { border-color: #ffb700; opacity: 0.5; }
+.btn-neon {
+    background: #00d2ff; border: none; color: black; font-weight: bold;
+}
+.btn-neon:hover { box-shadow: 0 0 15px #00d2ff; background: white; }

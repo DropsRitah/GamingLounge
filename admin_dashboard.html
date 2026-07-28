@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Owner Panel | Elite Gaming</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="full-screen container-fluid">
+        <!-- HEADER -->
+        <div class="row mb-3">
+            <div class="col-12 glass d-flex justify-content-between align-items-center">
+                <h3 class="text-info m-0">ADMIN COMMAND CENTER</h3>
+                <h4 class="text-success m-0">Today's Sales: KSH {{ total_sales }}</h4>
+                <a href="/logout" class="btn btn-danger btn-sm">Logout</a>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <!-- LEFT: 30 STATION MAINTENANCE -->
+            <div class="col-md-7">
+                <div class="glass">
+                    <h5 class="text-info border-bottom pb-2">Station Maintenance</h5>
+                    <div class="station-grid mt-3">
+                        {% for s in stations %}
+                        <div class="st-card {{ s.status }}">
+                            <strong style="font-size: 0.8rem;">{{ s.name }}</strong><br>
+                            <small>{{ s.status }}</small><br>
+                            <a href="/toggle_service/{{ s.id }}" class="btn btn-dark btn-xs mt-1" style="font-size: 0.6rem;">TOGGLE</a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: GAME & USER MANAGEMENT -->
+            <div class="col-md-5">
+                <!-- ADD NEW GAME FORM -->
+                <div class="glass mb-3">
+                    <h5 class="text-primary border-bottom pb-2">Add New Game</h5>
+                    <form action="/add_game" method="POST" class="row g-2">
+                        <div class="col-7">
+                            <input type="text" name="name" class="form-control bg-dark text-white border-primary" placeholder="Game Title (e.g. Fortnite)" required>
+                        </div>
+                        <div class="col-5">
+                            <input type="number" name="rate" class="form-control bg-dark text-white border-primary" placeholder="Rate/Hr" required>
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-neon w-100">REGISTER GAME</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- EDIT EXISTING RATES -->
+                <div class="glass mb-3">
+                    <h5 class="text-info border-bottom pb-2">Current Games & Rates</h5>
+                    <div style="max-height: 200px; overflow-y: auto;">
+                        {% for g in games %}
+                        <form action="/update_game" method="POST" class="d-flex align-items-center mb-2 p-2 rounded" style="background: rgba(255,255,255,0.05);">
+                            <input type="hidden" name="game_id" value="{{ g.id }}">
+                            <span class="me-auto text-white">{{ g.name }}</span>
+                            <div class="input-group input-group-sm w-50">
+                                <span class="input-group-text bg-dark text-info border-info">KSH</span>
+                                <input type="number" name="rate" value="{{ g.rate_per_hour }}" class="form-control bg-dark text-white border-info">
+                                <button class="btn btn-outline-info">Save</button>
+                            </div>
+                        </form>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- ADD STAFF ACCOUNT -->
+                <div class="glass">
+                    <h5 class="text-warning border-bottom pb-2">Add Staff Account</h5>
+                    <form action="/add_user" method="POST">
+                        <input type="text" name="username" placeholder="Username" class="form-control bg-dark text-white border-secondary mb-2" required>
+                        <input type="password" name="password" placeholder="Password" class="form-control bg-dark text-white border-secondary mb-2" required>
+                        <button class="btn btn-outline-warning w-100">Create Staff User</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

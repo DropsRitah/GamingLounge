@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Staff Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="full-screen container-fluid">
+        <div class="row mb-3">
+            <div class="col-12 glass d-flex justify-content-between align-items-center">
+                <h3 class="text-info m-0">STAFF DASHBOARD</h3>
+                <a href="/logout" class="btn btn-danger btn-sm">Logout</a>
+            </div>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-8">
+                <div class="glass h-100">
+                    <h5 class="text-info">30 Station Status Grid</h5>
+                    <div class="station-grid">
+                        {% for s in stations %}
+                        <div class="st-card {{ s.status }}">
+                            {{ s.name }}<br><small>{{ s.status }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass mb-3">
+                    <h5>Allocate Station</h5>
+                    <form action="/start_session" method="POST">
+                        <select name="station_id" class="form-select bg-dark text-white mb-2" required>
+                            <option value="">Choose Station</option>
+                            {% for s in stations if s.status == 'Available' %}
+                            <option value="{{ s.id }}">{{ s.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <select name="game_name" class="form-select bg-dark text-white mb-3" required>
+                            {% for g in games %}
+                            <option value="{{ g.name }}">{{ g.name }} (KSH {{ g.rate_per_hour }}/hr)</option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-neon w-100">START PLAYTIME</button>
+                    </form>
+                </div>
+                <div class="glass">
+                    <h5>Active Sessions</h5>
+                    {% for sess in active_sessions %}
+                    <div class="border-bottom border-secondary mb-2 pb-2">
+                        <strong>STATION {{ sess.station_id }}</strong> - {{ sess.game_name }}<br>
+                        <form action="/stop_session/{{ sess.id }}" method="POST" class="mt-2 d-flex">
+                            <select name="payment_method" class="form-select form-select-sm bg-dark text-white me-1">
+                                <option>Mpesa</option><option>Cash</option><option>Bank</option>
+                            </select>
+                            <button class="btn btn-sm btn-danger">BILL</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
