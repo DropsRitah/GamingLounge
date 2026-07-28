@@ -5,9 +5,13 @@ from datetime import datetime, date
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = 'gaming_lounge_final_v3'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///gaming_lounge_final.db'
+app.secret_key = 'gaming_lounge_pro_secure_key'
+
+# --- DATABASE CONFIG FOR CLOUD HOSTING ---
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'gaming_system.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 
 # --- MODELS ---
@@ -37,7 +41,7 @@ class GameSession(db.Model):
     payment_method = db.Column(db.String(20))
     is_active = db.Column(db.Boolean, default=True)
 
-# --- DB INIT ---
+# --- DB INITIALIZATION ---
 with app.app_context():
     db.create_all()
     if not User.query.filter_by(username="admin").first():
@@ -50,16 +54,20 @@ with app.app_context():
 
 # --- ROUTES ---
 @app.route('/')
-def index(): return redirect(url_for('login'))
+def index():
+    return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        u, p, r = request.form['username'], request.form['password'], request.form['role']
+        u = request.form.get('username')
+        p = request.form.get('password')
+        r = request.form.get('role')
         user = User.query.filter_by(username=u, role=r).first()
         if user and check_password_hash(user.password, p):
             session['user_id'], session['role'] = user.id, user.role
             return redirect(url_for('admin_dashboard' if r == 'admin' else 'user_dashboard'))
+        flash("Invalid login credentials")
     return render_template('login.html')
 
 @app.route('/logout')
@@ -71,20 +79,15 @@ def logout():
 @app.route('/admin_dashboard')
 def admin_dashboard():
     if session.get('role') != 'admin': return redirect(url_for('login'))
-    
-    # Calculate daily sales
-    today = date.today()
-    completed = GameSession.query.filter(db.func.date(GameSession.end_time) == today, GameSession.is_active == False).all()
-    total_sales = sum(s.total_cost for s in completed)
-    
+    today_sales = sum(s.total_cost for s in GameSession.query.filter(db.func.date(GameSession.end_time) == date.today()).all())
     return render_template('admin_dashboard.html', 
                            stations=Station.query.all(), 
                            games=Game.query.all(), 
-                           total_sales=round(total_sales, 2), 
-                           reports=completed)
+                           total_sales=round(today_sales, 2))
 
 @app.route('/toggle_service/<int:id>')
 def toggle_service(id):
+    if session.get('role') != 'admin': return redirect(url_for('login'))
     s = Station.query.get(id)
     s.status = 'Out of Service' if s.status != 'Out of Service' else 'Available'
     db.session.commit()
@@ -92,14 +95,14 @@ def toggle_service(id):
 
 @app.route('/add_game', methods=['POST'])
 def add_game():
-    name = request.form['name']
-    rate = float(request.form['rate'])
-    db.session.add(Game(name=name, rate_per_hour=rate))
+    if session.get('role') != 'admin': return redirect(url_for('login'))
+    db.session.add(Game(name=request.form['name'], rate_per_hour=float(request.form['rate'])))
     db.session.commit()
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/update_game', methods=['POST'])
 def update_game():
+    if session.get('role') != 'admin': return redirect(url_for('login'))
     g = Game.query.get(request.form['game_id'])
     g.rate_per_hour = float(request.form['rate'])
     db.session.commit()
@@ -107,6 +110,7 @@ def update_game():
 
 @app.route('/add_user', methods=['POST'])
 def add_user():
+    if session.get('role') != 'admin': return redirect(url_for('login'))
     pw = generate_password_hash(request.form['password'], method='pbkdf2:sha256')
     db.session.add(User(username=request.form['username'], password=pw, role='staff'))
     db.session.commit()
